@@ -1,5 +1,6 @@
 #include <getopt.h>
 #include <linux/limits.h>
+#include <limits.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -38,14 +39,40 @@ int get_battery_percent(const char* battery_path)
 {
 	char battery_capacity_path[PATH_MAX];
 	int n;
+
 	if (battery_path[strlen(battery_path)-1] != '/') {
 		n = snprintf(battery_capacity_path, PATH_MAX, "%s/capacity", battery_path);
 	} else {
 		n = snprintf(battery_capacity_path, PATH_MAX, "%scapacity", battery_path);
 	}
-	if (n < 0)
-		return -1;
-	return 0;
+
+	if (n < 0) {
+		error("get_battery_percent", "unable to create path");
+	}
+
+	FILE* battery_capacity_file = fopen(battery_capacity_path, "r");
+	if (battery_capacity_file == NULL)
+		error("get_battery_percent", "unable to open file");
+
+	char read_battery_capacity[4];
+	read_battery_capacity[3] = '\0';
+	/* TODO: there is likely an instance where fread will fail; currently this is unhandled */
+	fread(read_battery_capacity, sizeof(char), 3, battery_capacity_file);
+	fclose(battery_capacity_file);
+
+	for (int i = 0; i < 3; i++) {
+		if (read_battery_capacity[i] == '\n')
+			read_battery_capacity[i] = '\0';
+	}
+
+	if (strlen(read_battery_capacity) == 0)
+		error("get_battery_percent", "file contained no readable content");
+
+	long capacity = strtol(read_battery_capacity, NULL, 10);
+	if (capacity == LONG_MIN || capacity == LONG_MAX)
+		error("get_battery_percent", "file contained invalid content");
+
+	return capacity;
 }
 
 int main(int argc, char** argv)
@@ -77,6 +104,11 @@ int main(int argc, char** argv)
 	const char* battery_path = argv[optind];
 	if (battery_path == NULL || strlen(battery_path) == 0)
 		error("args", "battery_path specified was empty");
+
+	int percent = get_battery_percent(battery_path);
+
+	if (show_percent)
+		printf("%d%%\n", percent);
 
 	exit(EXIT_SUCCESS);
 }
