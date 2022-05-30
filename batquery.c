@@ -1,4 +1,5 @@
 #include <getopt.h>
+#include <linux/limits.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -31,6 +32,20 @@ int error(const char* error_scope, const char* error_msg)
 {
 	fprintf(stderr, "%s: %s\n", error_scope, error_msg);
 	exit(EXIT_FAILURE);
+}
+
+int get_battery_percent(const char* battery_path)
+{
+	char battery_capacity_path[PATH_MAX];
+	int n;
+	if (battery_path[strlen(battery_path)-1] != '/') {
+		n = snprintf(battery_capacity_path, PATH_MAX, "%s/capacity", battery_path);
+	} else {
+		n = snprintf(battery_capacity_path, PATH_MAX, "%scapacity", battery_path);
+	}
+	if (n < 0)
+		return -1;
+	return 0;
 }
 
 int main(int argc, char** argv)
