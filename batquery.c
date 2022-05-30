@@ -1,3 +1,5 @@
+#include <getopt.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -27,5 +29,26 @@ int usage(const char* prog_name)
 
 int main(int argc, char** argv)
 {
-	usage(argv[0]);
+	bool show_icon = false, show_percent = true, show_time = false;
+	int opt;
+	while ((opt = getopt(argc, argv, "ipt")) != -1) {
+		switch (opt) {
+			case 'i':
+				show_icon = true;
+				break;
+			case 'p':
+				show_percent = true;
+				if (show_time)
+					show_time = false;
+				break;
+			case 't':
+				show_time = true;
+				if (show_percent)
+					show_percent = false;
+				break;
+			default:
+				usage(argv[0]);
+		}
+	}
+	exit(EXIT_SUCCESS);
 }
