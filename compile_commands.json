@@ -1,0 +1,16 @@
+[
+  {
+    "arguments": [
+      "/usr/bin/cc",
+      "-c",
+      "-g",
+      "-std=c99",
+      "-pedantic",
+      "-Wall",
+      "-Os",
+      "batquery.c"
+    ],
+    "directory": "/home/hayden/batquery",
+    "file": "/home/hayden/batquery/batquery.c"
+  }
+]
