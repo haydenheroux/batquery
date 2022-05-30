@@ -27,6 +27,12 @@ int usage(const char* prog_name)
 	exit(EXIT_FAILURE);
 }
 
+int error(const char* error_scope, const char* error_msg)
+{
+	fprintf(stderr, "%s: %s\n", error_scope, error_msg);
+	exit(EXIT_FAILURE);
+}
+
 int main(int argc, char** argv)
 {
 	bool show_icon = false, show_percent = true, show_time = false;
@@ -50,5 +56,12 @@ int main(int argc, char** argv)
 				usage(argv[0]);
 		}
 	}
+
+	if (optind >= argc)
+		error("args", "battery_path not specified");
+	const char* battery_path = argv[optind];
+	if (battery_path == NULL || strlen(battery_path) == 0)
+		error("args", "battery_path specified was empty");
+
 	exit(EXIT_SUCCESS);
 }
