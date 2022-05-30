@@ -106,6 +106,26 @@ int main(int argc, char** argv)
 		error("args", "battery_path specified was empty");
 
 	int percent = get_battery_percent(battery_path);
+	if (show_icon) {
+		/* TODO: use nf-mdi-battery_* instead of nf-fa-battery_* */
+		if (percent == 100) {
+			/* nf-fa-battery_full */
+			printf("");
+		} else if (75 <= percent && percent < 100) {
+			/* nf-fa-battery_three_quarters */
+			printf("");
+		} else if (50 <= percent && percent < 75) {
+			/* nf-fa-battery_half */
+			printf("");
+		} else if (25 <= percent && percent < 50) {
+			/* nf-fa-battery_quarter */
+			printf("");
+		} else if (0 <= percent && percent < 25) {
+			/* nf-fa-battery_empty */
+			printf("");
+		}
+		putchar(' ');
+	}
 
 	if (show_percent)
 		printf("%d%%\n", percent);
