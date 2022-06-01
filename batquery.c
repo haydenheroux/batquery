@@ -52,9 +52,12 @@ int get_battery_percent(const char* battery_path)
 	fread(read_battery_capacity, sizeof(char), 3, battery_capacity_file);
 	fclose(battery_capacity_file);
 
-	for (int i = 0; i < 3; i++) {
-		if (read_battery_capacity[i] == '\n')
+	/* FIXME: will break if there is more than one newline in the string */
+	for (int i = 3; i >= 0; --i) {
+		if (read_battery_capacity[i] == '\n') {
 			read_battery_capacity[i] = '\0';
+			break;
+		}
 	}
 
 	if (strlen(read_battery_capacity) == 0)
