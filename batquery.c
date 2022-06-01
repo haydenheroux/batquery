@@ -6,35 +6,40 @@
 #include <stdlib.h>
 #include <string.h>
 
+/* pad a string with pad_len spaces */
 char* pad(size_t pad_len)
 {
-	char* pad_str = (char*) calloc(pad_len + 1, sizeof(char));
+	char* pad_str = (char*) calloc(pad_len+1, sizeof(char));
 	if (pad_str == NULL)
 		return pad_str;
 	memset(pad_str, ' ', pad_len);
 	return pad_str;
 }
 
+/* print a usage message to stderr */
 int usage(const char* prog_name)
 {
-	size_t pad_len = strlen("usage: ") + strlen(prog_name) + 1;
+	size_t pad_len = strlen("usage: ")+strlen(prog_name)+1;
 	char* pad_str = pad(pad_len);
 	fprintf(stderr, "usage: %s [-i] [-p | -t] <battery_path>\n%s -i: show battery status icon\n%s -p: show battery percent\n%s -t: show time remaining\n", prog_name, pad_str, pad_str, pad_str);
 	free(pad_str);
 	exit(EXIT_FAILURE);
 }
 
+/* print a usage message to stderr */
 int error(const char* error_scope, const char* error_msg)
 {
 	fprintf(stderr, "%s: %s\n", error_scope, error_msg);
 	exit(EXIT_FAILURE);
 }
 
+/* read the numerical value of the battery capacity */
 int get_battery_percent(const char* battery_path)
 {
-	char battery_capacity_path[PATH_MAX + 1];
+	char battery_capacity_path[PATH_MAX+1];
 
-	strncpy(battery_capacity_path, battery_path, PATH_MAX + 1);
+	/* create the battery capacity path */
+	strncpy(battery_capacity_path, battery_path, PATH_MAX+1);
 
 	if (battery_path[strlen(battery_path)-1] != '/') {
 		strncat(battery_capacity_path, "/capacity", PATH_MAX);
@@ -63,6 +68,7 @@ int get_battery_percent(const char* battery_path)
 	if (strlen(read_battery_capacity) == 0)
 		error("get_battery_percent", "file contained no readable content");
 
+	/* convert the content of the file to a number  */
 	long capacity = strtol(read_battery_capacity, NULL, 10);
 	if (capacity == LONG_MIN || capacity == LONG_MAX)
 		error("get_battery_percent", "file contained invalid content");
@@ -74,6 +80,8 @@ int main(int argc, char** argv)
 {
 	bool show_icon = false, show_percent = true, show_time = false;
 	int opt;
+
+	/* parse options using getopt; no per-option arguments */
 	while ((opt = getopt(argc, argv, "ipt")) != -1) {
 		switch (opt) {
 			case 'i':
@@ -94,6 +102,7 @@ int main(int argc, char** argv)
 		}
 	}
 
+	/* get the battery path from the last option */
 	if (optind >= argc)
 		error("args", "battery_path not specified");
 	const char* battery_path = argv[optind];
