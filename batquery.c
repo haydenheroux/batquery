@@ -107,37 +107,37 @@ int main(int argc, char** argv)
 	if (show_icon) {
 		if (percent == 100) {
 			/* nf-mdi-battery */
-			printf("");
+			fputs("", stdout);
 		} else if (percent >= 90 && percent < 100) {
 			/* nf-mdi-battery_90 */
-			printf("");
+			fputs("", stdout);
 		} else if (percent >= 80 && percent < 90) {
 			/* nf-mdi-battery_80 */
-			printf("");
+			fputs("", stdout);
 		} else if (percent >= 70 && percent < 80) {
 			/* nf-mdi-battery_70 */
-			printf("");
+			fputs("", stdout);
 		} else if (percent >= 60 && percent < 70) {
 			/* nf-mdi-battery_60 */
-			printf("");
+			fputs("", stdout);
 		} else if (percent >= 50 && percent < 60) {
 			/* nf-mdi-battery_50 */
-			printf("");
+			fputs("", stdout);
 		} else if (percent >= 40 && percent < 50) {
 			/* nf-mdi-battery_40 */
-			printf("");
+			fputs("", stdout);
 		} else if (percent >= 30 && percent < 40) {
 			/* nf-mdi-battery_30 */
-			printf("");
+			fputs("", stdout);
 		} else if (percent >= 20 && percent < 30) {
 			/* nf-mdi-battery_20 */
-			printf("");
+			fputs("", stdout);
 		} else if (percent >= 10 && percent < 20) {
 			/* nf-mdi-battery_10 */
-			printf("");
+			fputs("", stdout);
 		} else {
 			/* nf-mdi-battery_alert */
-			printf("");
+			fputs("", stdout);
 		}
 		putchar(' ');
 	}
