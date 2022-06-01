@@ -19,10 +19,7 @@ int usage(const char* prog_name)
 {
 	size_t pad_len = strlen("usage: ") + strlen(prog_name) + 1;
 	char* pad_str = pad(pad_len);
-	fprintf(stderr, "usage: %s [-i] [-p | -t] <battery_path>\n", prog_name);
-	fprintf(stderr, "%s -i: show battery status icon\n", pad_str);
-	fprintf(stderr, "%s -p: show battery percent\n", pad_str);
-	fprintf(stderr, "%s -t: show time remaining\n", pad_str);
+	fprintf(stderr, "usage: %s [-i] [-p | -t] <battery_path>\n%s -i: show battery status icon\n%s -p: show battery percent\n%s -t: show time remaining\n", prog_name, pad_str, pad_str, pad_str);
 	free(pad_str);
 	exit(EXIT_FAILURE);
 }
