@@ -97,39 +97,37 @@ int main(int argc, char** argv)
 	if (optind >= argc)
 		error("args", "battery_path not specified");
 	const char* battery_path = argv[optind];
-	if (battery_path == NULL || strlen(battery_path) == 0)
-		error("args", "battery_path specified was empty");
 
 	int percent = get_battery_percent(battery_path);
 	if (show_icon) {
-		if (percent == 100) {
+		if (percent >= 100) {
 			/* nf-mdi-battery */
 			fputs("", stdout);
-		} else if (percent >= 90 && percent < 100) {
+		} else if (percent >= 90) {
 			/* nf-mdi-battery_90 */
 			fputs("", stdout);
-		} else if (percent >= 80 && percent < 90) {
+		} else if (percent >= 80) {
 			/* nf-mdi-battery_80 */
 			fputs("", stdout);
-		} else if (percent >= 70 && percent < 80) {
+		} else if (percent >= 70) {
 			/* nf-mdi-battery_70 */
 			fputs("", stdout);
-		} else if (percent >= 60 && percent < 70) {
+		} else if (percent >= 60) {
 			/* nf-mdi-battery_60 */
 			fputs("", stdout);
-		} else if (percent >= 50 && percent < 60) {
+		} else if (percent >= 50) {
 			/* nf-mdi-battery_50 */
 			fputs("", stdout);
-		} else if (percent >= 40 && percent < 50) {
+		} else if (percent >= 40) {
 			/* nf-mdi-battery_40 */
 			fputs("", stdout);
-		} else if (percent >= 30 && percent < 40) {
+		} else if (percent >= 30) { 
 			/* nf-mdi-battery_30 */
 			fputs("", stdout);
-		} else if (percent >= 20 && percent < 30) {
+		} else if (percent >= 20) { 
 			/* nf-mdi-battery_20 */
 			fputs("", stdout);
-		} else if (percent >= 10 && percent < 20) {
+		} else if (percent >= 10) {
 			/* nf-mdi-battery_10 */
 			fputs("", stdout);
 		} else {
