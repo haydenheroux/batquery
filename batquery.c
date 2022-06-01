@@ -8,12 +8,10 @@
 
 char* pad(size_t pad_len)
 {
-	char* pad_str = (char*) malloc(sizeof(char)*(pad_len+1));
+	char* pad_str = (char*) calloc(pad_len + 1, sizeof(char));
 	if (pad_str == NULL)
 		return pad_str;
-	pad_str[pad_len] = '\0';
-	for (int i = 0; i < pad_len; i++)
-		pad_str[i] = ' ';
+	memset(pad_str, ' ', pad_len);
 	return pad_str;
 }
 
