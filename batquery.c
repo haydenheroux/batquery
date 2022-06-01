@@ -35,17 +35,14 @@ int error(const char* error_scope, const char* error_msg)
 
 int get_battery_percent(const char* battery_path)
 {
-	char battery_capacity_path[PATH_MAX];
-	int n;
+	char battery_capacity_path[PATH_MAX + 1];
+
+	strncpy(battery_capacity_path, battery_path, PATH_MAX + 1);
 
 	if (battery_path[strlen(battery_path)-1] != '/') {
-		n = snprintf(battery_capacity_path, PATH_MAX, "%s/capacity", battery_path);
+		strncat(battery_capacity_path, "/capacity", PATH_MAX);
 	} else {
-		n = snprintf(battery_capacity_path, PATH_MAX, "%scapacity", battery_path);
-	}
-
-	if (n < 0) {
-		error("get_battery_percent", "unable to create path");
+		strncat(battery_capacity_path, "capacity", PATH_MAX);
 	}
 
 	FILE* battery_capacity_file = fopen(battery_capacity_path, "r");
