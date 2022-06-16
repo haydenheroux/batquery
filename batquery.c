@@ -33,7 +33,7 @@ int error(const char* error_scope, const char* error_msg)
 	exit(EXIT_FAILURE);
 }
 
-/* read the numerical value of the battery capacity */
+/* the numerical value of the battery capacity */
 int get_battery_percent(const char* battery_path)
 {
 	char battery_capacity_path[PATH_MAX+1];
@@ -76,6 +76,7 @@ int get_battery_percent(const char* battery_path)
 	return capacity;
 }
 
+/* true if the battery is charging, false if not */
 bool get_battery_charge_status(const char* battery_path)
 {
 	return true;
