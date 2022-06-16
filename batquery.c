@@ -85,7 +85,15 @@ int get_battery_percent(const char* battery_path)
 /* true if the battery is charging, false if not */
 bool get_battery_charge_status(const char* battery_path)
 {
-	return true;
+	char battery_charging;
+
+	/* read just the first character of the charge status */
+	read_content_of_file(battery_path, "status", &battery_charging, 1);
+	/* 'C' == charging */
+	if (battery_charging == 'C')
+		return true;
+
+	return false;
 }
 
 
