@@ -33,29 +33,35 @@ int error(const char* error_scope, const char* error_msg)
 	exit(EXIT_FAILURE);
 }
 
+void read_content_of_file(const char* battery_path, const char* file_name, char* result_buffer, int len)
+{
+	char full_file_path[PATH_MAX+1];
+
+	/* create the battery capacity path */
+	strncpy(full_file_path, battery_path, PATH_MAX+1);
+
+	if (battery_path[strlen(battery_path)-1] != '/') {
+		strncat(full_file_path, "/", PATH_MAX);
+		strncat(full_file_path, file_name, PATH_MAX);
+	} else {
+		strncat(full_file_path, file_name, PATH_MAX);
+	}
+
+	FILE* file = fopen(full_file_path, "r");
+	if (file == NULL)
+		error("read_content_of_file", "unable to open file");
+	fread(result_buffer, sizeof(char), len, file);
+	fclose(file);
+}
+
 /* the numerical value of the battery capacity */
 int get_battery_percent(const char* battery_path)
 {
-	char battery_capacity_path[PATH_MAX+1];
-
-	/* create the battery capacity path */
-	strncpy(battery_capacity_path, battery_path, PATH_MAX+1);
-
-	if (battery_path[strlen(battery_path)-1] != '/') {
-		strncat(battery_capacity_path, "/capacity", PATH_MAX);
-	} else {
-		strncat(battery_capacity_path, "capacity", PATH_MAX);
-	}
-
-	FILE* battery_capacity_file = fopen(battery_capacity_path, "r");
-	if (battery_capacity_file == NULL)
-		error("get_battery_percent", "unable to open file");
 
 	char read_battery_capacity[4];
 	read_battery_capacity[3] = '\0';
-	/* TODO: there is likely an instance where fread will fail; currently this is unhandled */
-	fread(read_battery_capacity, sizeof(char), 3, battery_capacity_file);
-	fclose(battery_capacity_file);
+
+	read_content_of_file(battery_path, "capacity", read_battery_capacity, 3);
 
 	/* FIXME: will break if there is more than one newline in the string */
 	for (int i = 3; i >= 0; --i) {
