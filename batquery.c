@@ -21,7 +21,7 @@ int usage(const char* prog_name)
 {
 	size_t pad_len = strlen("usage: ")+strlen(prog_name)+1;
 	char* pad_str = pad(pad_len);
-	fprintf(stderr, "usage: %s [-i] [-p | -t] <battery_path>\n%s -i: show battery status icon\n%s -p: show battery percent\n%s -t: show time remaining\n", prog_name, pad_str, pad_str, pad_str);
+	fprintf(stderr, "usage: %s [-i]  [-c] [-p | -t] <battery_path>\n%s -i: show battery status icon\n%s -c: show charging status\n%s -p: show battery percent\n%s -t: show time remaining\n", prog_name, pad_str, pad_str, pad_str, pad_str);
 	free(pad_str);
 	exit(EXIT_FAILURE);
 }
@@ -76,16 +76,25 @@ int get_battery_percent(const char* battery_path)
 	return capacity;
 }
 
+bool get_battery_charge_status(const char* battery_path)
+{
+	return true;
+}
+
+
 int main(int argc, char** argv)
 {
-	bool show_icon = false, show_percent = true, show_time = false;
+	bool show_icon = false, show_percent = true, show_time = false, show_charging = false;
 	int opt;
 
 	/* parse options using getopt; no per-option arguments */
-	while ((opt = getopt(argc, argv, "ipt")) != -1) {
+	while ((opt = getopt(argc, argv, "icpt")) != -1) {
 		switch (opt) {
 			case 'i':
 				show_icon = true;
+				break;
+			case 'c':
+				show_charging = true;
 				break;
 			case 'p':
 				show_percent = true;
@@ -108,8 +117,12 @@ int main(int argc, char** argv)
 	const char* battery_path = argv[optind];
 
 	int percent = get_battery_percent(battery_path);
+	bool charging = get_battery_charge_status(battery_path);
 	if (show_icon) {
-		if (percent >= 100) {
+		if (show_charging && charging) {
+			/* nf-mdi-battery_charging */
+			fputs("", stdout);
+		} else if (percent >= 100) {
 			/* nf-mdi-battery */
 			fputs("", stdout);
 		} else if (percent >= 90) {
