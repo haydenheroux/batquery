@@ -46,12 +46,12 @@ void read_content_of_file(const char* battery_path, const char* file_name, char*
 	} else {
 		strncat(full_file_path, file_name, PATH_MAX);
 	}
+	full_file_path[PATH_MAX] = '\0';
 
 	FILE* file = fopen(full_file_path, "r");
 	if (file == NULL)
 		error("read_content_of_file", "unable to open file");
 	fread(result_buffer, sizeof(char), len, file);
-	result_buffer[PATH_MAX] = '\0';
 	fclose(file);
 }
 
