@@ -1,10 +1,11 @@
 #include <getopt.h>
-#include <linux/limits.h>
 #include <limits.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#define PATH_MAX 256
 
 /* pad a string with pad_len spaces */
 char* pad(size_t pad_len)
@@ -51,6 +52,7 @@ void read_content_of_file(const char* battery_path, const char* file_name, char*
 	if (file == NULL)
 		error("read_content_of_file", "unable to open file");
 	fread(result_buffer, sizeof(char), len, file);
+	result_buffer[PATH_MAX] = '\0';
 	fclose(file);
 }
 
