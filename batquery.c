@@ -5,9 +5,11 @@
 #include <stdlib.h>
 #include <string.h>
 
+/* FIXME: this isn't standardized anywhere */
 #define PATH_MAX 256
 
 /* pad a string with pad_len spaces */
+/* TODO: there is likely already a standard method for padding */
 char* pad(size_t pad_len)
 {
 	char* pad_str = (char*) calloc(pad_len+1, sizeof(char));
@@ -26,13 +28,15 @@ void usage(const char* prog_name)
 	free(pad_str);
 }
 
-/* print a usage message to stderr */
+/* print an error message to stderr of format error_scope: error_msg and exit */
+/* TODO: stub this out if not in debug mode */
 void error(const char* error_scope, const char* error_msg)
 {
 	fprintf(stderr, "%s: %s\n", error_scope, error_msg);
 	exit(EXIT_FAILURE);
 }
 
+/* read content of a file into a string */
 void read_content_of_file(const char* battery_path, const char* file_name, char* result_buffer, int len)
 {
 	char full_file_path[PATH_MAX+1];
@@ -40,20 +44,27 @@ void read_content_of_file(const char* battery_path, const char* file_name, char*
 	/* create the battery capacity path */
 	strncpy(full_file_path, battery_path, PATH_MAX+1);
 
-	if (battery_path[strlen(battery_path)-1] != '/') {
+	/* add a trailing slash if one is not present */
+	/* TODO: move this logic to outside this function? */
+	if (battery_path[strlen(battery_path)-1] != '/')
 		strncat(full_file_path, "/", PATH_MAX);
-		strncat(full_file_path, file_name, PATH_MAX);
-	} else {
-		strncat(full_file_path, file_name, PATH_MAX);
-	}
+
+	/* battery_path/ -> battery_path/file_name */
+	strncat(full_file_path, file_name, PATH_MAX);
+
+	/* delimit file path, just in case */
 	full_file_path[PATH_MAX] = '\0';
 
 	FILE* file = fopen(full_file_path, "r");
 	if (file == NULL)
 		error("read_content_of_file", "unable to open file");
+
 	size_t bytes = fread(result_buffer, sizeof(char), len, file);
+
+	/* there is a case where the end of the file is encountered sooner than expected, so only fail on explicit error */
 	if (bytes != sizeof(char)*len && ferror(file))
 		error("read_content_of_file", "error while reading the file");
+
 	fclose(file);
 }
 
@@ -74,6 +85,7 @@ int get_battery_percent(const char* battery_path)
 		}
 	}
 
+	/* if nothing (or total garbage) was read there is nothing to do */
 	if (strlen(read_battery_capacity) == 0)
 		error("get_battery_percent", "file contained no readable content");
 
@@ -92,6 +104,8 @@ bool get_battery_charge_status(const char* battery_path)
 
 	/* read just the first character of the charge status */
 	read_content_of_file(battery_path, "status", &battery_charging, 1);
+	/* TODO: support more charge states */
+	/* TODO: use switch statement */
 	/* 'C' == charging */
 	if (battery_charging == 'C')
 		return true;
@@ -112,6 +126,7 @@ int main(int argc, char** argv)
 				show_icon = true;
 				break;
 			case 'c':
+				/* TODO: automatically set icon flag if charging flag is set? */
 				show_charging = true;
 				break;
 			case 'p':
@@ -130,16 +145,21 @@ int main(int argc, char** argv)
 		}
 	}
 
-	/* get the battery path from the last option */
+	/* error if there is no final argument */
 	if (optind >= argc) {
 		usage(argv[0]);
 		error("args", "battery_path not specified");
 	}
 
+	/* get the battery path from the last option */
 	const char* battery_path = argv[optind];
 
+	/* get battery information */
 	int percent = get_battery_percent(battery_path);
+	/* TODO: bool -> enum to support more battery charge states */
 	bool charging = get_battery_charge_status(battery_path);
+
+	/* FIXME */
 	if (show_icon) {
 		if (show_charging && charging) {
 			/* nf-mdi-battery_charging */
