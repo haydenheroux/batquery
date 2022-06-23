@@ -51,7 +51,9 @@ void read_content_of_file(const char* battery_path, const char* file_name, char*
 	FILE* file = fopen(full_file_path, "r");
 	if (file == NULL)
 		error("read_content_of_file", "unable to open file");
-	fread(result_buffer, sizeof(char), len, file);
+	size_t bytes = fread(result_buffer, sizeof(char), len, file);
+	if (bytes != sizeof(char)*len && ferror(file))
+		error("read_content_of_file", "error while reading the file");
 	fclose(file);
 }
 
