@@ -18,17 +18,16 @@ char* pad(size_t pad_len)
 }
 
 /* print a usage message to stderr */
-int usage(const char* prog_name)
+void usage(const char* prog_name)
 {
 	size_t pad_len = strlen("usage: ")+strlen(prog_name)+1;
 	char* pad_str = pad(pad_len);
 	fprintf(stderr, "usage: %s [-i]  [-c] [-p | -t] <battery_path>\n%s -i: show battery status icon\n%s -c: show charging status\n%s -p: show battery percent\n%s -t: show time remaining\n", prog_name, pad_str, pad_str, pad_str, pad_str);
 	free(pad_str);
-	exit(EXIT_FAILURE);
 }
 
 /* print a usage message to stderr */
-int error(const char* error_scope, const char* error_msg)
+void error(const char* error_scope, const char* error_msg)
 {
 	fprintf(stderr, "%s: %s\n", error_scope, error_msg);
 	exit(EXIT_FAILURE);
@@ -125,12 +124,16 @@ int main(int argc, char** argv)
 				break;
 			default:
 				usage(argv[0]);
+				exit(EXIT_FAILURE);
 		}
 	}
 
 	/* get the battery path from the last option */
-	if (optind >= argc)
+	if (optind >= argc) {
+		usage(argv[0]);
 		error("args", "battery_path not specified");
+	}
+
 	const char* battery_path = argv[optind];
 
 	int percent = get_battery_percent(battery_path);
