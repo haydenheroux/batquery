@@ -162,41 +162,41 @@ int main(int argc, char** argv)
 	/* FIXME */
 	if (show_icon) {
 		if (show_charging && charging) {
-			/* nf-mdi-battery_charging */
-			fputs("", stdout);
+			/* nf-md-battery_charging */
+			fputs("󰂄", stdout);
 		} else if (percent >= 100) {
-			/* nf-mdi-battery */
-			fputs("", stdout);
+			/* nf-md-battery */
+			fputs("󰁹", stdout);
 		} else if (percent >= 90) {
-			/* nf-mdi-battery_90 */
-			fputs("", stdout);
+			/* nf-md-battery_90 */
+			fputs("󰂂", stdout);
 		} else if (percent >= 80) {
-			/* nf-mdi-battery_80 */
-			fputs("", stdout);
+			/* nf-md-battery_80 */
+			fputs("󰂁", stdout);
 		} else if (percent >= 70) {
-			/* nf-mdi-battery_70 */
-			fputs("", stdout);
+			/* nf-md-battery_70 */
+			fputs("󰂀", stdout);
 		} else if (percent >= 60) {
-			/* nf-mdi-battery_60 */
-			fputs("", stdout);
+			/* nf-md-battery_60 */
+			fputs("󰁿", stdout);
 		} else if (percent >= 50) {
-			/* nf-mdi-battery_50 */
-			fputs("", stdout);
+			/* nf-md-battery_50 */
+			fputs("󰁾", stdout);
 		} else if (percent >= 40) {
-			/* nf-mdi-battery_40 */
-			fputs("", stdout);
+			/* nf-md-battery_40 */
+			fputs("󰁽", stdout);
 		} else if (percent >= 30) { 
-			/* nf-mdi-battery_30 */
-			fputs("", stdout);
+			/* nf-md-battery_30 */
+			fputs("󰁼", stdout);
 		} else if (percent >= 20) { 
-			/* nf-mdi-battery_20 */
-			fputs("", stdout);
+			/* nf-md-battery_20 */
+			fputs("󰁻", stdout);
 		} else if (percent >= 10) {
-			/* nf-mdi-battery_10 */
-			fputs("", stdout);
+			/* nf-md-battery_10 */
+			fputs("󰁺", stdout);
 		} else {
-			/* nf-mdi-battery_alert */
-			fputs("", stdout);
+			/* nf-md-battery_alert */
+			fputs("󰂃", stdout);
 		}
 		putchar(' ');
 	}
