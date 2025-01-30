@@ -321,7 +321,7 @@ int main(int argc, char **argv) {
         }
       }
 #else
-    printf("%d:%2d", hours, minutes);
+    printf("%d:%02d", hours, minutes);
 #endif
     } else {
       printf("%.2f", time_remaining_hours);
