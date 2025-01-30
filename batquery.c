@@ -43,12 +43,11 @@ double read_number(char **str) {
 void usage(const char *prog_name) {
   size_t pad_len = strlen("usage: ") + strlen(prog_name) + 1;
   char *pad_str = pad(pad_len);
-  fprintf(
-      stderr,
-      "usage: %s [-i]  [-c] [-p | -t | -d] <battery_path>\n%s -i: show battery "
-      "status icon\n%s -c: show charging status\n%s -p: show battery "
-      "percent\n%s -t: show time remaining\n%s -d: show discharge rate\n",
-      prog_name, pad_str, pad_str, pad_str, pad_str, pad_str);
+  fprintf(stderr,
+          "usage: %s [-i] [-p | -d] <battery_path>\n%s -i: show battery "
+          "status icon\n%s -p: show battery "
+          "percent\n%s -d: show discharge rate\n",
+          prog_name, pad_str, pad_str, pad_str);
   free(pad_str);
 }
 
@@ -166,34 +165,21 @@ double get_battery_discharge_rate(const char *battery_path) {
 }
 
 int main(int argc, char **argv) {
-  bool show_icon = false, show_percent = true, show_time = false,
-       show_charging = false, show_discharge_rate = false;
+  bool show_icon = false, show_percent = true, show_discharge_rate = false;
   int opt;
 
   /* Parse options using getopt; no per-option arguments. */
-  while ((opt = getopt(argc, argv, "icptd")) != -1) {
+  while ((opt = getopt(argc, argv, "ipd")) != -1) {
     switch (opt) {
     case 'i':
       show_icon = true;
       break;
-    case 'c':
-      /* TODO Automatically set icon flag if charging flag is set? */
-      show_charging = true;
-      break;
     case 'p':
       show_percent = true;
-      if (show_time)
-        show_time = false;
-      break;
-    case 't':
-      show_time = true;
-      if (show_percent)
-        show_percent = false;
       break;
     case 'd':
       show_discharge_rate = true;
       show_percent = false;
-      show_time = false;
       break;
     default:
       usage(argv[0]);
@@ -215,59 +201,60 @@ int main(int argc, char **argv) {
   /* TODO bool -> enum to support more battery charge states. */
   bool charging = get_battery_charge_status(battery_path);
 
-  /* FIXME */
-  if (show_icon && charging) {
-    if (show_charging) {
-      /* nf-md-battery_charging */
-      fputs("󰂄", stdout);
-    } else if (percent >= 100) {
-      /* nf-md-battery */
-      fputs("󰁹", stdout);
-    } else if (percent >= 90) {
-      /* nf-md-battery_90 */
-      fputs("󰂂", stdout);
-    } else if (percent >= 80) {
-      /* nf-md-battery_80 */
-      fputs("󰂁", stdout);
-    } else if (percent >= 70) {
-      /* nf-md-battery_70 */
-      fputs("󰂀", stdout);
-    } else if (percent >= 60) {
-      /* nf-md-battery_60 */
-      fputs("󰁿", stdout);
-    } else if (percent >= 50) {
-      /* nf-md-battery_50 */
-      fputs("󰁾", stdout);
-    } else if (percent >= 40) {
-      /* nf-md-battery_40 */
-      fputs("󰁽", stdout);
-    } else if (percent >= 30) {
-      /* nf-md-battery_30 */
-      fputs("󰁼", stdout);
-    } else if (percent >= 20) {
-      /* nf-md-battery_20 */
-      fputs("󰁻", stdout);
-    } else if (percent >= 10) {
-      /* nf-md-battery_10 */
-      fputs("󰁺", stdout);
-    } else {
-      /* nf-md-battery_alert */
-      fputs("󰂃", stdout);
+  if (show_percent) {
+    if (show_icon) {
+      if (charging) {
+        /* nf-md-battery_charging */
+        fputs("󰂄", stdout);
+      } else if (percent >= 100) {
+        /* nf-md-battery */
+        fputs("󰁹", stdout);
+      } else if (percent >= 90) {
+        /* nf-md-battery_90 */
+        fputs("󰂂", stdout);
+      } else if (percent >= 80) {
+        /* nf-md-battery_80 */
+        fputs("󰂁", stdout);
+      } else if (percent >= 70) {
+        /* nf-md-battery_70 */
+        fputs("󰂀", stdout);
+      } else if (percent >= 60) {
+        /* nf-md-battery_60 */
+        fputs("󰁿", stdout);
+      } else if (percent >= 50) {
+        /* nf-md-battery_50 */
+        fputs("󰁾", stdout);
+      } else if (percent >= 40) {
+        /* nf-md-battery_40 */
+        fputs("󰁽", stdout);
+      } else if (percent >= 30) {
+        /* nf-md-battery_30 */
+        fputs("󰁼", stdout);
+      } else if (percent >= 20) {
+        /* nf-md-battery_20 */
+        fputs("󰁻", stdout);
+      } else if (percent >= 10) {
+        /* nf-md-battery_10 */
+        fputs("󰁺", stdout);
+      } else {
+        /* nf-md-battery_alert */
+        fputs("󰂃", stdout);
+      }
+      putchar(' ');
     }
-    putchar(' ');
+    printf("%d", percent);
+    if (show_icon) {
+      putchar('%');
+    }
   }
-
-  if (show_percent)
-    printf("%d%%", percent);
 
   if (show_discharge_rate) {
     double discharge_rate = get_battery_discharge_rate(battery_path);
     printf("%.2f", discharge_rate);
-  }
-
-  if (show_icon) {
-    putchar(' ');
-    putchar('W');
+    if (show_icon) {
+      putchar(' ');
+      putchar('W');
+    }
   }
 
   putchar('\n');
