@@ -18,15 +18,37 @@ char *pad(size_t pad_len) {
   return pad_str;
 }
 
+/* Return true if the string starts with the prefix. */
+bool prefix(const char *prefix, const char *str) {
+  return strncmp(prefix, str, strlen(prefix)) == 0;
+}
+
+/* Reads a number from the string. Returns the number. Advances the string
+ * pointer to after the number. */
+double read_number(char **str) {
+  char *start = strchr(*str, '=');
+  char *end = strchr(start, '\n');
+  /* Move one character forward, past the '='. */
+  start++;
+  *end = '\0';
+  double number = atof(start);
+  /* Replace the newline. */
+  *end = '\n';
+  /* Move one character forward past the newline. */
+  *str = ++end;
+  return number;
+}
+
 /* Print a usage message to stderr. */
 void usage(const char *prog_name) {
   size_t pad_len = strlen("usage: ") + strlen(prog_name) + 1;
   char *pad_str = pad(pad_len);
-  fprintf(stderr,
-          "usage: %s [-i]  [-c] [-p | -t] <battery_path>\n%s -i: show battery "
-          "status icon\n%s -c: show charging status\n%s -p: show battery "
-          "percent\n%s -t: show time remaining\n",
-          prog_name, pad_str, pad_str, pad_str, pad_str);
+  fprintf(
+      stderr,
+      "usage: %s [-i]  [-c] [-p | -t | -d] <battery_path>\n%s -i: show battery "
+      "status icon\n%s -c: show charging status\n%s -p: show battery "
+      "percent\n%s -t: show time remaining\n%s -d: show discharge rate\n",
+      prog_name, pad_str, pad_str, pad_str, pad_str, pad_str);
   free(pad_str);
 }
 
@@ -113,13 +135,43 @@ bool get_battery_charge_status(const char *battery_path) {
   return false;
 }
 
+/* The discharge rate of the battery in watts. */
+double get_battery_discharge_rate(const char *battery_path) {
+  char uevent[1024];
+  uevent[1023] = '\0';
+
+  read_content_of_file(battery_path, "uevent", uevent, 1024);
+
+  double micro_volts = 0;
+  double micro_amps = 0;
+
+  char *line = uevent;
+  while ((line = strchr(line, '\n')) != NULL) {
+    /* Move one character forward, past the newline. */
+    line++;
+
+    if (prefix("POWER_SUPPLY_VOLTAGE_NOW=", line)) {
+      micro_volts = read_number(&line);
+    }
+
+    if (prefix("POWER_SUPPLY_CURRENT_NOW=", line)) {
+      micro_amps = read_number(&line);
+    }
+  }
+
+  double volts = micro_volts / 1000000;
+  double amps = micro_amps / 1000000;
+  double battery_discharge_rate_watts = volts * amps;
+  return battery_discharge_rate_watts;
+}
+
 int main(int argc, char **argv) {
   bool show_icon = false, show_percent = true, show_time = false,
-       show_charging = false;
+       show_charging = false, show_discharge_rate = false;
   int opt;
 
   /* Parse options using getopt; no per-option arguments. */
-  while ((opt = getopt(argc, argv, "icpt")) != -1) {
+  while ((opt = getopt(argc, argv, "icptd")) != -1) {
     switch (opt) {
     case 'i':
       show_icon = true;
@@ -137,6 +189,11 @@ int main(int argc, char **argv) {
       show_time = true;
       if (show_percent)
         show_percent = false;
+      break;
+    case 'd':
+      show_discharge_rate = true;
+      show_percent = false;
+      show_time = false;
       break;
     default:
       usage(argv[0]);
@@ -159,8 +216,8 @@ int main(int argc, char **argv) {
   bool charging = get_battery_charge_status(battery_path);
 
   /* FIXME */
-  if (show_icon) {
-    if (show_charging && charging) {
+  if (show_icon && charging) {
+    if (show_charging) {
       /* nf-md-battery_charging */
       fputs("󰂄", stdout);
     } else if (percent >= 100) {
@@ -201,7 +258,19 @@ int main(int argc, char **argv) {
   }
 
   if (show_percent)
-    printf("%d%%\n", percent);
+    printf("%d%%", percent);
+
+  if (show_discharge_rate) {
+    double discharge_rate = get_battery_discharge_rate(battery_path);
+    printf("%.2f", discharge_rate);
+  }
+
+  if (show_icon) {
+    putchar(' ');
+    putchar('W');
+  }
+
+  putchar('\n');
 
   exit(EXIT_SUCCESS);
 }
