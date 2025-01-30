@@ -304,6 +304,7 @@ int main(int argc, char **argv) {
       double frac = fmod(time_remaining_hours, 1);
       int hours = floor(time_remaining_hours - frac);
       int minutes = floor(frac * 60);
+#if 0
       if (hours) {
         printf("%d hour", hours);
         if (hours > 1) {
@@ -319,6 +320,9 @@ int main(int argc, char **argv) {
           putchar('s');
         }
       }
+#else
+    printf("%d:%2d", hours, minutes);
+#endif
     } else {
       printf("%.2f", time_remaining_hours);
     }
