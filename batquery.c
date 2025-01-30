@@ -1,5 +1,6 @@
 #include <getopt.h>
 #include <limits.h>
+#include <math.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -44,10 +45,10 @@ void usage(const char *prog_name) {
   size_t pad_len = strlen("usage: ") + strlen(prog_name) + 1;
   char *pad_str = pad(pad_len);
   fprintf(stderr,
-          "usage: %s [-i] [-p | -d] <battery_path>\n%s -i: show battery "
+          "usage: %s [-i] [-p | -d | -t] <battery_path>\n%s -i: show battery "
           "status icon\n%s -p: show battery "
-          "percent\n%s -d: show discharge rate\n",
-          prog_name, pad_str, pad_str, pad_str);
+          "percent\n%s -d: show discharge rate\n%s -t: show time remaining\n",
+          prog_name, pad_str, pad_str, pad_str, pad_str);
   free(pad_str);
 }
 
@@ -164,22 +165,58 @@ double get_battery_discharge_rate(const char *battery_path) {
   return battery_discharge_rate_watts;
 }
 
+/* The capacity of the battery now in watt-hours. */
+double get_battery_capacity_now(const char *battery_path) {
+  char uevent[1024];
+  uevent[1023] = '\0';
+
+  read_content_of_file(battery_path, "uevent", uevent, 1024);
+
+  double charge_now_micro_amp_hours = 0;
+  double voltage_now_micro_volts = 0;
+
+  char *line = uevent;
+  while ((line = strchr(line, '\n')) != NULL) {
+    /* Move one character forward, past the newline. */
+    line++;
+
+    if (prefix("POWER_SUPPLY_CHARGE_NOW=", line)) {
+      charge_now_micro_amp_hours = read_number(&line);
+    }
+
+    if (prefix("POWER_SUPPLY_VOLTAGE_NOW=", line)) {
+      voltage_now_micro_volts = read_number(&line);
+    }
+  }
+
+  double charge_now_amp_hours = charge_now_micro_amp_hours / 1000000;
+  double voltage_now_volts = voltage_now_micro_volts / 1000000;
+  double battery_capacity_now_watt_hours =
+      charge_now_amp_hours * voltage_now_volts;
+  return battery_capacity_now_watt_hours;
+}
+
+enum mode { NONE, PERCENT, DISCHARGE_RATE, TIME_REMAINING };
+
 int main(int argc, char **argv) {
-  bool show_icon = false, show_percent = true, show_discharge_rate = false;
+  bool show_icon = false;
+  enum mode mode = NONE;
   int opt;
 
   /* Parse options using getopt; no per-option arguments. */
-  while ((opt = getopt(argc, argv, "ipd")) != -1) {
+  while ((opt = getopt(argc, argv, "ipdt")) != -1) {
     switch (opt) {
     case 'i':
       show_icon = true;
       break;
     case 'p':
-      show_percent = true;
+      mode = PERCENT;
       break;
     case 'd':
-      show_discharge_rate = true;
-      show_percent = false;
+      mode = DISCHARGE_RATE;
+      break;
+    case 't':
+      mode = TIME_REMAINING;
       break;
     default:
       usage(argv[0]);
@@ -200,8 +237,16 @@ int main(int argc, char **argv) {
   int percent = get_battery_percent(battery_path);
   /* TODO bool -> enum to support more battery charge states. */
   bool charging = get_battery_charge_status(battery_path);
+  double discharge_rate_watts = get_battery_discharge_rate(battery_path);
+  double capacity_now_watt_hours = get_battery_capacity_now(battery_path);
+  double time_remaining_hours = capacity_now_watt_hours / discharge_rate_watts;
 
-  if (show_percent) {
+  switch (mode) {
+  case NONE:
+    usage(argv[0]);
+    error("args", "mode flag not specified");
+    break;
+  case PERCENT:
     if (show_icon) {
       if (charging) {
         /* nf-md-battery_charging */
@@ -246,15 +291,38 @@ int main(int argc, char **argv) {
     if (show_icon) {
       putchar('%');
     }
-  }
-
-  if (show_discharge_rate) {
-    double discharge_rate = get_battery_discharge_rate(battery_path);
-    printf("%.2f", discharge_rate);
+    break;
+  case DISCHARGE_RATE:
+    printf("%.2f", discharge_rate_watts);
     if (show_icon) {
       putchar(' ');
       putchar('W');
     }
+    break;
+  case TIME_REMAINING:
+    if (show_icon) {
+      double frac = fmod(time_remaining_hours, 1);
+      int hours = floor(time_remaining_hours - frac);
+      int minutes = floor(frac * 60);
+      if (hours) {
+        printf("%d hour", hours);
+        if (hours > 1) {
+          putchar('s');
+        }
+      }
+      if (hours && minutes) {
+        putchar(' ');
+      }
+      if (minutes) {
+        printf("%d minute", minutes);
+        if (minutes > 1) {
+          putchar('s');
+        }
+      }
+    } else {
+      printf("%.2f", time_remaining_hours);
+    }
+    break;
   }
 
   putchar('\n');
