@@ -301,9 +301,12 @@ int main(int argc, char **argv) {
     break;
   case TIME_REMAINING:
     if (show_icon) {
-      double frac = fmod(time_remaining_hours, 1);
-      int hours = floor(time_remaining_hours - frac);
-      int minutes = floor(frac * 60);
+      if (charging) {
+        printf("-:--");
+      } else {
+        double frac = fmod(time_remaining_hours, 1);
+        int hours = floor(time_remaining_hours - frac);
+        int minutes = floor(frac * 60);
 #if 0
       if (hours) {
         printf("%d hour", hours);
@@ -321,10 +324,15 @@ int main(int argc, char **argv) {
         }
       }
 #else
-    printf("%d:%02d", hours, minutes);
+        printf("%d:%02d", hours, minutes);
+      }
 #endif
     } else {
-      printf("%.2f", time_remaining_hours);
+      if (charging) {
+        putchar('0');
+      } else {
+        printf("%.2f", time_remaining_hours);
+      }
     }
     break;
   }
